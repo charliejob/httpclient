@@ -5,10 +5,10 @@ add_definitions(-std=c++11)
 
 FILE(GLOB HEADER_FILES_CORE
 	httpclient.h
+	threadpool.h
 	)
 FILE(GLOB SOURCE_FILES_CORE
 	main.cpp
-    httpclient.cpp
 	)
 
 source_group("Header Files" FILES
