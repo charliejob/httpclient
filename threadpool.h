@@ -5,6 +5,7 @@
 #include <mutex>
 #include <queue>
 #include <atomic>
+#include <future>
 #include <condition_variable>
 #define THREADPOOL_MAX_NUM 10
 class ThreadPool
@@ -33,6 +34,28 @@ public:
 		}
 		_task_cv.notify_one();
 	};
+	template<class F>
+	auto commit(F&& f)->std::future<decltype(f())>
+	{
+		using RetType = decltype(f());
+		auto task = std::make_shared<std::packaged_task<RetType()>>(f);
+		std::future<RetType> fut = task->get_future();
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_tasks.emplace([task]() {
+				(*task)();
+			});
+		}
+		_task_cv.notify_one();
+		return fut;
+	}
+	//bind： .commit(std::bind(&Dog::sayHello, &dog));
+	//mem_fn： .commit(std::mem_fn(&Dog::sayHello), this)
+	template<class F, class... Args>
+	inline auto commit(F&& f, Args&&... args) ->std::future<decltype(f(args...))>
+	{
+		return commit(bind(std::forward<F>(f), std::forward<Args>(args)...));
+	}
 private:
 	void _addThread(unsigned short size)
 	{
