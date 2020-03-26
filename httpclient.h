@@ -30,10 +30,17 @@ public:
     curl_easy_setopt(C.get(), CURLOPT_TIMEOUT, 1L);
     curl_easy_setopt(C.get(), CURLOPT_USERAGENT, "code of hammurabi");
     curl_easy_setopt(C.get(), CURLOPT_WRITEFUNCTION, recvCallback);
-    struct curl_slist* headers = NULL;
     headers = curl_slist_append(headers, "Expect: ");  //对POST请求打开VERBOSE开关，看到发出请求头信息包含 Expect: 100-Continue, 网上查找对应说明，当POST数据大于1024字节时
     headers = curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
     curl_easy_setopt(C.get(), CURLOPT_HTTPHEADER, headers);
+  }
+  ~CCurlHttp()
+  {
+    if(headers != NULL)
+    {
+      curl_slist_free_all(headers);
+      headers = NULL;
+    }
   }
   std::string operator()(const std::string& url,const std::string& data)
   {
@@ -63,5 +70,6 @@ private:
   };
   typedef std::unique_ptr<CURL, CURL_deleter> unique_curl;
   unique_curl C;
+  struct curl_slist* headers = NULL;
 };
 

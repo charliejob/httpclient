@@ -9,6 +9,12 @@ int main(){
 	std::string url = "localhost:9999";
 	std::string json = "asd";
 	hreadPool.cast([&](){CCurlHttp()(url,json);});
-	while(1);
+	for(int i=0;i<10;i++){
+		for(int i=0;i<10;i++){
+			hreadPool.cast([&](){std::cout << CCurlHttp()(url,json) << std::endl;});
+		}
+		std::cout << "before sleep" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
 	return 0;
 }
