@@ -7,13 +7,14 @@
 #include <atomic>
 #include <future>
 #include <condition_variable>
+#include <algorithm>
 #define THREADPOOL_MAX_NUM 10
 class ThreadPool
 {
 	using Task = std::function<void()>;
 public:
 	ThreadPool(unsigned short size=THREADPOOL_MAX_NUM) {
-		_addThread(size);
+		_addThread(std::min(size, (decltype(size))THREADPOOL_MAX_NUM));
 	};
 	~ThreadPool() {
 		_run = false;
